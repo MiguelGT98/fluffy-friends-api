@@ -21,9 +21,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 const userRoutes = require("./routes/users");
+const friendRoutes = require("./routes/friends");
 
 // API routes
 app.use("/api/users", userRoutes);
+app.use("/api/friends", friendRoutes);
 
 app.listen(port, (err) => {
   if (err) {

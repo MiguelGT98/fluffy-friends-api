@@ -4,6 +4,13 @@ const saltRounds = 10;
 
 let jwt = require("jsonwebtoken");
 
+const cloudinary = require("cloudinary").v2;
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 exports.findUserByID = (req, res, next) => {
   User.findById(req.params.id, "email username _id")
     .then((user) => {
@@ -23,6 +30,18 @@ exports.findUserByID = (req, res, next) => {
 };
 
 exports.register = (req, res, next) => {
+  if (!req.body.username) {
+    return res.status(400).json({ message: "Missing username field" });
+  }
+
+  if (!req.body.email) {
+    return res.status(400).json({ message: "Missing email field" });
+  }
+
+  if (!req.body.password) {
+    return res.status(400).json({ message: "Missing password field" });
+  }
+
   bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
     const user = new User({
       password: hash,
@@ -78,3 +97,16 @@ exports.login = (req, res, next) => {
       return res.status(500).json(err);
     });
 };
+
+exports.uploadAvatar = (req, res, next) => {
+  console.log(req.file);
+  return cloudinary.uploader
+    .upload(req.file.path)
+    .then(({ url, secure_url }) => {
+      return res.status(200).json({ url, secure_url });
+    })
+    .catch((err) => {
+      return res.status(500).json(err);
+    });
+};
+
