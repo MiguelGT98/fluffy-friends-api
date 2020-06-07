@@ -109,4 +109,7 @@ exports.uploadAvatar = (req, res, next) => {
       return res.status(500).json(err);
     });
 };
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5ea4e909d134d87fb73d60bdcb81f84285c8f220
