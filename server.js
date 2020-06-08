@@ -17,6 +17,9 @@ mongoose.connect(isDev ? process.env.DB_DEV : process.env.DB_PROD);
 mongoose.Promise = global.Promise;
 
 const app = express();
+var cors = require("cors");
+
+app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
