@@ -292,7 +292,7 @@ exports.updateFriend = (req, res, next) => {
       })
       .then(() => {
         return res.status(200).json({
-          succes: true,
+          success: true,
           message:
             locale === "es"
               ? "Se actualizó al amigo con éxito"
