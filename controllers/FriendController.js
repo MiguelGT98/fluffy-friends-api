@@ -10,38 +10,65 @@ cloudinary.config({
 const formidable = require("formidable");
 
 exports.createFriend = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   const user = req.decoded;
 
   const form = formidable({ multiples: true });
 
-  form.parse(req, (err, fields, files) => {
-    if (err) {
-      next(err);
-      return;
+  form.parse(req, (error, fields, files) => {
+    if (error) {
+      return res.status(500).json(error);
     }
 
     if (!fields.name) {
-      return res.status(400).json({ message: "Missing name field" });
+      return res.status(400).json({
+        message:
+          locale === "es" ? "Falta campo de nombre" : "Missing name field",
+      });
     }
 
+    fields.characteristics = JSON.parse(fields.characteristics);
+
     if (!fields.characteristics) {
-      return res.status(400).json({ message: "Missing characteristics field" });
+      return res.status(400).json({
+        message:
+          locale === "es"
+            ? "Falta campo de características"
+            : "Missing characteristics field",
+      });
     }
 
     if (!fields.description) {
-      return res.status(400).json({ message: "Missing description field" });
+      return res.status(400).json({
+        message:
+          locale === "es"
+            ? "Falta campo de descripción"
+            : "Missing description field",
+      });
     }
 
     if (!fields.breed) {
-      return res.status(400).json({ message: "Missing breed field" });
+      return res.status(400).json({
+        message:
+          locale === "es" ? "Falta campo de raza" : "Missing breed field",
+      });
     }
 
     if (!fields.location) {
-      return res.status(400).json({ message: "Missing location field" });
+      return res.status(400).json({
+        message:
+          locale === "es"
+            ? "Falta campo de ubicación"
+            : "Missing location field",
+      });
     }
 
     if (!files.image) {
-      return res.status(400).json({ message: "Missing image field" });
+      return res.status(400).json({
+        message:
+          locale === "es" ? "Falta campo de imagen" : "Missing image field",
+      });
     }
 
     return cloudinary.uploader
@@ -55,68 +82,123 @@ exports.createFriend = (req, res, next) => {
           image: url,
         });
         friend.save().then(() => {
-          return res
-            .status(200)
-            .json({ success: true, message: "Creation successful" });
+          return res.status(200).json({
+            success: true,
+            message:
+              locale === "es"
+                ? "Creación de friend exitosa"
+                : "Friend creation successfull",
+          });
         });
       })
-      .catch((err) => {
-        return res.status(500).json(err);
+      .catch((error) => {
+        return res.status(500).json({
+          error,
+          message:
+            locale === "es"
+              ? "Ocurrió un error inesperado"
+              : "An unexpected error happened",
+        });
       });
   });
 };
 
 exports.getFriend = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   Friend.findById(req.params.id)
     .then((result) => {
       if (!result) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Friend not found" });
+        return res.status(404).json({
+          success: false,
+          message: locale === "es" ? "Amigo no encontrado" : "Friend not found",
+        });
       }
 
       return res.status(200).json(result);
     })
-    .catch((err) => {
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };
 
 exports.getFriends = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   Friend.find({ owner: { $ne: req.decoded.id } })
     .then((result) => {
       if (!result) {
-        return res
-          .status(404)
-          .json({ success: false, message: "No friends were found" });
+        return res.status(404).json({
+          success: false,
+          message:
+            locale === "es"
+              ? "No se encontraron amigos"
+              : "No friends were found",
+        });
       }
 
-      return res.status(200).json({ friends: result });
+      return res.status(200).json({
+        friends: result,
+        message:
+          locale === "es"
+            ? "Amigos recuperados con éxito"
+            : "Friends retreived successfully",
+      });
     })
-    .catch((err) => {
-      console.log(err);
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };
 
 exports.getMyFriends = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   Friend.find({ owner: req.decoded.id })
     .then((result) => {
       if (!result) {
-        return res
-          .status(404)
-          .json({ success: false, message: "No friends were found" });
+        return res.status(404).json({
+          success: false,
+          message:
+            locale === "es"
+              ? "No se encontraron amigos"
+              : "No friends were found",
+        });
       }
 
-      return res.status(200).json({ friends: result });
+      return res.status(200).json({
+        friends: result,
+        message:
+          locale === "es"
+            ? "Amigos recuperados con éxito"
+            : "Friends retreived successfully",
+      });
     })
-    .catch((err) => {
-      console.log(err);
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };
 
 exports.updateFriend = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   const user = req.decoded;
 
   const form = formidable({ multiples: true });
@@ -127,18 +209,69 @@ exports.updateFriend = (req, res, next) => {
       return;
     }
 
+    if (fields.name === "") {
+      return res.status(400).json({
+        message:
+          locale === "es" ? "Falta campo de nombre" : "Missing name field",
+      });
+    }
+
+    fields.characteristics = JSON.parse(fields.characteristics);
+
+    if (fields.characteristics.length === 0) {
+      return res.status(400).json({
+        message:
+          locale === "es"
+            ? "Falta campo de características"
+            : "Missing characteristics field",
+      });
+    }
+
+    if (fields.description === "") {
+      return res.status(400).json({
+        message:
+          locale === "es"
+            ? "Falta campo de descripción"
+            : "Missing description field",
+      });
+    }
+
+    if (fields.breed === "") {
+      return res.status(400).json({
+        message:
+          locale === "es" ? "Falta campo de raza" : "Missing breed field",
+      });
+    }
+
+    if (fields.location === "") {
+      return res.status(400).json({
+        message:
+          locale === "es"
+            ? "Falta campo de ubicación"
+            : "Missing location field",
+      });
+    }
+
     return Friend.findById(req.params.id)
       .then((result) => {
         if (!result) {
-          return res
-            .status(404)
-            .json({ success: false, message: "Friend not found" });
+          return res.status(404).json({
+            success: false,
+            message:
+              locale === "es"
+                ? "No se encontró a ese amigo"
+                : "Friend was not found",
+          });
         }
 
         if (result.owner !== user.id)
-          return res
-            .status(401)
-            .json({ success: false, message: "You are not that dog's owner" });
+          return res.status(401).json({
+            success: false,
+            message:
+              locale === "es"
+                ? "No eres el dueño de ese amigo"
+                : "You are not that dog's owner",
+          });
 
         if (!files.image)
           return Friend.findByIdAndUpdate(
@@ -158,38 +291,61 @@ exports.updateFriend = (req, res, next) => {
         return;
       })
       .then(() => {
-        return res
-          .status(200)
-          .json({ succes: true, message: "Updated friend" });
+        return res.status(200).json({
+          succes: true,
+          message:
+            locale === "es"
+              ? "Se actualizó al amigo con éxito"
+              : "Updated friend",
+        });
       })
-      .catch((err) => {
-        return res.status(500).json(err);
+      .catch((error) => {
+        return res.status(500).json({
+          error,
+          message:
+            locale === "es"
+              ? "Ocurrió un error inesperado"
+              : "An unexpected error happened",
+        });
       });
   });
 };
 
 exports.deleteFriend = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   const user = req.decoded;
 
   Friend.findById(req.params.id)
     .then((result) => {
       if (!result) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Friend not found" });
+        return res.status(404).json({
+          success: false,
+          message: locale === "es" ? "Amigo no encontrado" : "Friend not found",
+        });
       }
 
       if (result.owner !== user.id)
-        return res
-          .status(401)
-          .json({ success: false, message: "You are not that dog's owner" });
+        return res.status(401).json({
+          success: false,
+          message:
+            locale === "es"
+              ? "No eres el dueño de ese amigo"
+              : "You are not that dog's owner",
+        });
 
       return Friend.findByIdAndDelete({ _id: req.params.id });
     })
     .then((result) => {
       return res.status(200).json(result);
     })
-    .catch((err) => {
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };

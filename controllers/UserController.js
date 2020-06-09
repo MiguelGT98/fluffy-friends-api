@@ -12,34 +12,61 @@ cloudinary.config({
 });
 
 exports.findUserByID = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   User.findById(req.params.id, "email username _id")
     .then((user) => {
       if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+        return res.status(404).json({
+          success: false,
+          message:
+            locale === "es" ? "No se encontró al usuario" : "User not found",
+        });
       }
 
-      return res
-        .status(200)
-        .json({ success: true, message: "Get succesful", user });
+      return res.status(200).json({
+        success: true,
+        message: locale === "es" ? "Se encontró al usuario" : "User found",
+        user,
+      });
     })
-    .catch((err) => {
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };
 
 exports.register = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   if (!req.body.username) {
-    return res.status(400).json({ message: "Missing username field" });
+    return res.status(400).json({
+      message:
+        locale === "es"
+          ? "Campo de nombre de usuario es requerido"
+          : "Missing username field",
+    });
   }
 
   if (!req.body.email) {
-    return res.status(400).json({ message: "Missing email field" });
+    return res.status(400).json({
+      message:
+        locale === "es" ? "Campo de email es requerido" : "Missing email field",
+    });
   }
 
   if (!req.body.password) {
-    return res.status(400).json({ message: "Missing password field" });
+    return res.status(400).json({
+      message:
+        locale === "es"
+          ? "Campo de contraseña es requerido"
+          : "Missing username field",
+    });
   }
 
   bcrypt.hash(req.body.password, saltRounds, function (err, hash) {
@@ -56,23 +83,35 @@ exports.register = (req, res, next) => {
           { email: result.email, id: result._id, username: result.username },
           process.env.JWT_SECRET
         );
-        return res
-          .status(200)
-          .json({ success: true, message: "Auth succesful", token });
+        return res.status(200).json({
+          success: true,
+          message:
+            locale === "es" ? "Registro exitoso" : "Register successfull",
+          token,
+        });
       })
-      .catch((err) => {
-        return res.status(500).json(err);
+      .catch((error) => {
+        return res.status(500).json({
+          error,
+          message:
+            locale === "es"
+              ? "Ocurrió un error inesperado"
+              : "An unexpected error happened",
+        });
       });
   });
 };
 
 exports.login = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   User.findOne({ email: req.body.email })
     .then((user) => {
       if (!user) {
         return res.status(401).send({
           success: false,
-          message: "Authentication details wrong.",
+          message:
+            locale === "es" ? "Credenciales incorrectas" : "Wrong credentials",
         });
       }
 
@@ -80,7 +119,10 @@ exports.login = (req, res, next) => {
         if (!result) {
           return res.status(401).send({
             success: false,
-            message: "Authentication details wrong.",
+            message:
+              locale === "es"
+                ? "Credenciales incorrectas"
+                : "Wrong credentials",
           });
         }
 
@@ -88,57 +130,99 @@ exports.login = (req, res, next) => {
           { email: user.email, id: user._id, username: user.username },
           process.env.JWT_SECRET
         );
-        return res
-          .status(200)
-          .json({ success: true, message: "Auth succesful", token });
+        return res.status(200).json({
+          success: true,
+          message:
+            locale === "es" ? "Inicio de sesión exitoso" : "Login successfull",
+          token,
+        });
       });
     })
-    .catch((err) => {
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };
 
 exports.uploadAvatar = (req, res, next) => {
-  console.log(req.file);
+  const locale = req.headers["accept-language"] || "es";
+
   return cloudinary.uploader
     .upload(req.file.path)
     .then(({ url, secure_url }) => {
-      return res.status(200).json({ url, secure_url });
+      return res.status(200).json({
+        url,
+        secure_url,
+        message:
+          locale === "es"
+            ? "Avatar cambiado con éxito"
+            : "Avatar changed successfully",
+      });
     })
-    .catch((err) => {
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };
 
 exports.getUserDetails = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   User.findById(
     req.decoded.id,
     "email username _id names lastNames phone avatar"
   )
     .then((user) => {
       if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+        return res.status(404).json({
+          success: false,
+          message: locale === "es" ? "Usuario no encontrado" : "User not found",
+        });
       }
 
       return res.status(200).json({
         success: true,
-        message: "Get succesful",
+        message:
+          locale === "es"
+            ? "Datos del usuario recuperados con éxito"
+            : "User details retreived successfully",
         user: { ...user._doc, created_at: user._id.getTimestamp() },
       });
     })
-    .catch((err) => {
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };
 
 exports.updateUserDetails = (req, res, next) => {
+  const locale = req.headers["accept-language"] || "es";
+
   const { names, lastNames, phone, password, passwordConfirmation } = req.body;
   const newUser = {};
 
   if (password !== "" && password !== passwordConfirmation) {
-    return res.status(400).json({ message: "Passwords do not match" });
+    return res.status(400).json({
+      message:
+        locale === "es"
+          ? "Las contraseñas no coinciden"
+          : "Passwords do not match",
+    });
   }
 
   if (names && names !== "") newUser.names = names;
@@ -152,9 +236,11 @@ exports.updateUserDetails = (req, res, next) => {
       return User.findById(req.decoded.id, "_id")
         .then((user) => {
           if (!user) {
-            return res
-              .status(404)
-              .json({ success: false, message: "User not found" });
+            return res.status(404).json({
+              success: false,
+              message:
+                locale === "es" ? "Usuario no encontrado" : "User not found",
+            });
           }
 
           return User.findByIdAndUpdate({ _id: req.decoded.id }, newUser);
@@ -162,12 +248,21 @@ exports.updateUserDetails = (req, res, next) => {
         .then((user) => {
           return res.status(200).json({
             success: true,
-            message: "Updated succesfully",
+            message:
+              locale === "es"
+                ? "Usuario modificado con éxito"
+                : "User modified successfully",
             user: { ...user, password: null },
           });
         })
-        .catch((err) => {
-          return res.status(500).json(err);
+        .catch((error) => {
+          return res.status(500).json({
+            error,
+            message:
+              locale === "es"
+                ? "Ocurrió un error inesperado"
+                : "An unexpected error happened",
+          });
         });
     });
   }
@@ -175,9 +270,10 @@ exports.updateUserDetails = (req, res, next) => {
   return User.findById(req.decoded.id, "_id")
     .then((user) => {
       if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+        return res.status(404).json({
+          success: false,
+          message: locale === "es" ? "Usuario no encontrado" : "User not found",
+        });
       }
 
       return User.findByIdAndUpdate({ _id: req.decoded.id }, newUser);
@@ -185,11 +281,20 @@ exports.updateUserDetails = (req, res, next) => {
     .then((user) => {
       return res.status(200).json({
         success: true,
-        message: "Updated succesfully",
+        message:
+          locale === "es"
+            ? "Usuario modificado con éxito"
+            : "User modified successfully",
         user: { ...user, password: null },
       });
     })
-    .catch((err) => {
-      return res.status(500).json(err);
+    .catch((error) => {
+      return res.status(500).json({
+        error,
+        message:
+          locale === "es"
+            ? "Ocurrió un error inesperado"
+            : "An unexpected error happened",
+      });
     });
 };
