@@ -145,7 +145,34 @@ exports.updateUserDetails = (req, res, next) => {
   if (lastNames && lastNames !== "") newUser.lastNames = lastNames;
   if (phone && phone !== "") newUser.phone = phone;
 
-  User.findById(req.decoded.id, "_id")
+  if (password !== "") {
+    return bcrypt.hash(password, saltRounds, function (err, hash) {
+      newUser.password = hash;
+
+      return User.findById(req.decoded.id, "_id")
+        .then((user) => {
+          if (!user) {
+            return res
+              .status(404)
+              .json({ success: false, message: "User not found" });
+          }
+
+          return User.findByIdAndUpdate({ _id: req.decoded.id }, newUser);
+        })
+        .then((user) => {
+          return res.status(200).json({
+            success: true,
+            message: "Updated succesfully",
+            user: { ...user, password: null },
+          });
+        })
+        .catch((err) => {
+          return res.status(500).json(err);
+        });
+    });
+  }
+
+  return User.findById(req.decoded.id, "_id")
     .then((user) => {
       if (!user) {
         return res
@@ -159,7 +186,7 @@ exports.updateUserDetails = (req, res, next) => {
       return res.status(200).json({
         success: true,
         message: "Updated succesfully",
-        user,
+        user: { ...user, password: null },
       });
     })
     .catch((err) => {
