@@ -165,7 +165,17 @@ exports.getFriends = (req, res, next) => {
 exports.getMyFriends = (req, res, next) => {
   const locale = req.headers["accept-language"] || "es";
 
-  Friend.find({ owner: req.decoded.id })
+  const { limit, orderBy, page } = req.query;
+
+  let count = 0;
+  Friend.count({ owner: req.decoded.id })
+    .then((size) => {
+      count = Math.floor(size / parseInt(limit));
+      return Friend.find({ owner: req.decoded.id })
+        .skip(parseInt(page) * parseInt(limit) || 0)
+        .limit(parseInt(limit) || 0)
+        .sort(orderBy || "");
+    })
     .then((result) => {
       if (!result) {
         return res.status(404).json({
@@ -179,6 +189,7 @@ exports.getMyFriends = (req, res, next) => {
 
       return res.status(200).json({
         friends: result,
+        maxPage: count - 1,
         message:
           locale === "es"
             ? "Amigos recuperados con éxito"
