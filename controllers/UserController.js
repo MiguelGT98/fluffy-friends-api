@@ -109,3 +109,60 @@ exports.uploadAvatar = (req, res, next) => {
       return res.status(500).json(err);
     });
 };
+
+exports.getUserDetails = (req, res, next) => {
+  User.findById(
+    req.decoded.id,
+    "email username _id names lastNames phone avatar"
+  )
+    .then((user) => {
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Get succesful",
+        user: { ...user._doc, created_at: user._id.getTimestamp() },
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json(err);
+    });
+};
+
+exports.updateUserDetails = (req, res, next) => {
+  const { names, lastNames, phone, password, passwordConfirmation } = req.body;
+  const newUser = {};
+
+  if (password !== "" && password !== passwordConfirmation) {
+    return res.status(400).json({ message: "Passwords do not match" });
+  }
+
+  if (names && names !== "") newUser.names = names;
+  if (lastNames && lastNames !== "") newUser.lastNames = lastNames;
+  if (phone && phone !== "") newUser.phone = phone;
+
+  User.findById(req.decoded.id, "_id")
+    .then((user) => {
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
+
+      return User.findByIdAndUpdate({ _id: req.decoded.id }, newUser);
+    })
+    .then((user) => {
+      return res.status(200).json({
+        success: true,
+        message: "Updated succesfully",
+        user,
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json(err);
+    });
+};

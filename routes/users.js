@@ -4,11 +4,15 @@ const {
   login,
   register,
   uploadAvatar,
+  getUserDetails,
+  updateUserDetails,
 } = require("../controllers/UserController");
 
 const { checkToken } = require("../middlewares/AuthMiddleware");
 const multer = require("../middlewares/MulterMiddleware");
 
+router.get("/", [checkToken], getUserDetails);
+router.patch("/", [checkToken], updateUserDetails);
 router.get("/:id", findUserByID);
 router.post("/login", login);
 router.post("/register", register);
