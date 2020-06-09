@@ -20,8 +20,8 @@ const app = express();
 var cors = require("cors");
 
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb', extended: true }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const userRoutes = require("./routes/users");
 const friendRoutes = require("./routes/friends");
